@@ -2,12 +2,58 @@ All of my personal notes about profiling. They are either covering things that a
 
 # Unreal Insights
 
+- To ensure that we have more smooth frame generation on development builds we can use these commands:
+	- `-nosound`  - no sound processing impacting frame
+	- `-noailogging`  - when we're not profiling *AI* - logging of *AI* won't stall our frame
+	- `-noverifygc` - when we're not profiling *Garbage Collection* - make sure that process of *GC* verification won't trigger and hitch our frames
+	- `t.maxfps 0`  - make sure we don't restrict maximum FPS
+	- `r.vsync 0` - make sure that *Vsync* doesn't impact frame generation so we can look at actual problems instead of everything slowing down, because of *Vsync* being on
+- to make sure our exe starts with specific commands that are supposed to be triggered when launching build to profile - add this to exe shortcut:
+	- `-execcmds="r.vsync 0"`
+- The more `-trace=` params we use, the bigger the trace file! Be mindful of what are you profiling. Not everything is needed at once usually.
+- `stat namedevents` - even more details about events when tracing (increases trace file size as well)
+- `trace.bookmark <name>` - typed in console of a game, while tracing - emits bookmark with custom name. I.E. `trace.bookmark BossKilled` might be useful to mark specific situation if we're wanna see what happens after killing boss
+- `trace.screenshot <name>`  - typed in console of a game, while tracing - creates screenshot of given situation - helpful when you wanna see what was actually happening on the screen at painful performance hitching moment
+- `r.screenpercentage 10` - can reduce amount of graphics processing if we wanna concentrate on CPU or see if some graphical issue is screen percentage dependant
+- `pause` - pauses the game - might be useful in specific edge cases
+
+
+### Setting up code for Insights profiling
+
+- `TRACE_BOOKMARK(TEXT("Load started - %s"), *SomeActor->GetName());` - example of how to emit trace bookmark from code if we wanna mark some specific event
+- `SCOPED_NAMED_EVENT(Name, Color)` - this will make given scope appear in profiling window. If used at the beginning of given function - it will take scope of the function for consideration. If you wanna profile very specific part of given code, we can use `{ }` to mark scope we wanna see in trace file
+- `SCOPED_NAMED_EVENT_FSTRING(Name, Color)` - same as above, but uses FString
+- `DECLARE_SCOPE_CYCLE_COUNTER(DisplayName, StatName, StatGroup)`
+- 
 
 
 # In Game profiling commands
+- `viewmode` - when typed in build console let's you changes view modes, just like clicking them in the editor windows does
+	- `viewmode lit` - final result of our scene
+	- `viewmode unlit` - no lightning
+	- `viewmode wireframe` 
+		- cyan color - objects with *Mobility* set to *Static*
+		- violet color - objects with *Mobility* set to *Movable*
+		- green color - objects with simulated physics
+	- `viewmode lightcomplexity` - shows the number of non-static lights affecting your geometry
+		- black - no light affects given surface
+		- going from green to red - 1 or more than 5 light sources are affecting given surface
+	- `viewmode shadercomplexity` - quickly establish which parts of the scene are most expensive shader wise
+	- `viewmode CollisionPawn` - shows us which objects collides with *Pawn*/*Character*
+	- `viewmode CollisionVisibility` - useful for checking which Actors are blocking *Visibility*
+	- `viewmode LODColoration` - shows which LOD is being used now
+	- `viewmode hlodcoloration` - displays the Hierarchial LOD Cluster index of a primitive
 
 
 # CPU
 
 
 # GPU
+
+### Useful console commands
+- `profilegpu` 
+	- in editor - launches separate debug window for frame profiling
+	- in cooked build - dumps current frame to log
+- `profilegpuhitches` - triggers `profilegpu`  each time hitch happens
+- `rhi.GPUHitchThreshold 100` - establishes threshold for GPU hitches at 100 milliseconds
+- `r.ProfileGPU.Pattern *AmbientOcclusion*` - allows for filtering only specific Pattern i.e. AmbientOcclusion
