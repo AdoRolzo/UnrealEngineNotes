@@ -43,6 +43,19 @@ All of my personal notes about profiling. They are either covering things that a
 	- `viewmode CollisionVisibility` - useful for checking which Actors are blocking *Visibility*
 	- `viewmode LODColoration` - shows which LOD is being used now
 	- `viewmode hlodcoloration` - displays the Hierarchial LOD Cluster index of a primitive
+- `abtest` - awesome if we want to test and measure performance differences between two console variables values and see witch value is faster or preetier etc.
+	- i.e. `abtest r.nanite.MaxPixelsPerEdge 1 4`
+	- to make it stop - `abtest stop`
+- `stat`
+	- `stat detailed` - calls `stat fps`, `stat unit`, `stat unitgraph`
+	- `stat uobjects`
+	- `stat scenerendering`
+	- `stat game`
+	- `stat drawcount`
+	- `stat gpu`
+	- `stat anim`
+	- `stat dumphitches` - dumps slow frames to log with callstack of the problematic functions
+	- `stat slow -ms=1.0 -maxdepth=6` - creates a hierarchy of slow functions in the frame. We can specify what we consider slow and how deep should the hierarchy go
 
 
 # CPU
@@ -57,3 +70,11 @@ All of my personal notes about profiling. They are either covering things that a
 - `profilegpuhitches` - triggers `profilegpu`  each time hitch happens
 - `rhi.GPUHitchThreshold 100` - establishes threshold for GPU hitches at 100 milliseconds
 - `r.ProfileGPU.Pattern *AmbientOcclusion*` - allows for filtering only specific Pattern i.e. AmbientOcclusion
+
+
+# Garbage Collection
+
+-  There is no sense in profiling GC operations in development builds for GC Hitches
+	- GC stages and operations run unoptimized versions of themselves in development builds
+	- Their timings will be completely different than in Shipping or Test builds
+	
