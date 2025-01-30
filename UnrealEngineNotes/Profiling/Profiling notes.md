@@ -77,4 +77,32 @@ All of my personal notes about profiling. They are either covering things that a
 -  There is no sense in profiling GC operations in development builds for GC Hitches
 	- GC stages and operations run unoptimized versions of themselves in development builds
 	- Their timings will be completely different than in Shipping or Test builds
-	
+- We can log which objects are creating most garbage, when via using interface `FUObject:Array::FUObjectDeleteListener` on `GameInstance` 
+	- it is a good practise to put inheritence from this in `#if !UE_BUILD_SHIPPING` macro - to make sure that none of this logging goes into shipping build
+	- the same way all the overriden functions should be put in `!UE_BUILD_SHIPPING` macro
+	- we need to make sure that we initialize our Listener:
+	  `void UMyGameInstance::Init() 
+	  `{
+		  `Super::Init();
+	  `#if !UE_BUILD_SHIPPING 
+		  `GUObjectArray.AddUObjectDeleteListener(this); 
+	  `#endif 
+	  `}`
+	- we also need to remove listener on game instance shutdown:
+		- `void UMyGameInstance::Shutdown()` 
+		  `{`
+		   `#if !UE_BUILD_SHIPPING` 
+			   `GUObjectArray.RemoveUObjectDeleteListener(this);` 
+		   `#endif` 
+		   `}`
+	- than we can override `UMyGameInstance::NotifyUObjectDeleted(const UObjectBase* Object, int32 IdxInGUObjectArray)` and start doing stuff with info
+		- we should `const UObject* GarbageObject = (UObject*)Object;`
+		- we can check for flags whether something is `EInternalObjectFlags::Garbage`, `UE::GC::GUnreachableObjectFlag`, `UE::GC::GMaybeUnreachableObjectFlag` via `GarbageObj->HasAnyInternalFlags` 
+		- we can cast `GarbageObject` to any other Component, Actor or UObject and get more information about collected object
+		- we can use `UE_LOG` with `LogGarbage` log channel and `VeryVerbose` so it will not spam log all the time
+		- if our code doesn't compile make sure that you have empty implementation of `void UmyGameInstance::OnUObjectArrayShutdown() {}`
+		- `log loggarbage veryverbose` - will log garbage channel with very verbose
+		- the log will be spamming during play so it is a good idea to use filter for our `UE_LOG` debug string that we used
+		- good idea is to log out names of assets: Materials, Anims, Object names, Sounds etc. to know what to search for in Reference Viewer
+# Other usefule exe params
+- `-log` shows log window during build play
