@@ -56,6 +56,7 @@ All of my personal notes about profiling. They are either covering things that a
 	- `stat anim`
 	- `stat dumphitches` - dumps slow frames to log with callstack of the problematic functions
 	- `stat slow -ms=1.0 -maxdepth=6` - creates a hierarchy of slow functions in the frame. We can specify what we consider slow and how deep should the hierarchy go
+- `showlog` - opens log in a seperate window
 
 
 # CPU
@@ -105,4 +106,3 @@ All of my personal notes about profiling. They are either covering things that a
 		- the log will be spamming during play so it is a good idea to use filter for our `UE_LOG` debug string that we used
 		- good idea is to log out names of assets: Materials, Anims, Object names, Sounds etc. to know what to search for in Reference Viewer
 # Other usefule exe params
-- `-log` shows log window during build play
